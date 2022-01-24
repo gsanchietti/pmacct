@@ -1,7 +1,10 @@
 %global _hardened_build 1
+# Turn off the brp-python-bytecompile script
+%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
+
 
 Name:               pmacct
-Version:            1.6.2
+Version:            1.7.7
 Release:            1
 Summary:            Accounting and aggregation toolsuite for IPv4 and IPv6
 License:            GPLv2+
@@ -29,13 +32,17 @@ BuildRequires:      mariadb-devel
 BuildRequires:      libpcap-devel
 BuildRequires:      libstdc++-static
 BuildRequires:      pkgconfig
-BuildRequires:      postgresql-devel
 BuildRequires:      sqlite-devel >= 3.0.0
 BuildRequires:      pkgconfig(geoip)
 BuildRequires:      pkgconfig(jansson)
 BuildRequires:      systemd
 BuildRequires:      librabbitmq
 BuildRequires:      librabbitmq-devel
+BuildRequires:      numactl-devel
+BuildRequires:      autoconf
+BuildRequires:      automake
+BuildRequires:      libtool
+BuildRequires:      ndpi-dev
 
 Requires(post):     systemd
 Requires(preun):    systemd
@@ -69,14 +76,14 @@ export CFLAGS="%{optflags} -Wno-return-type"
     --enable-ipv6 \
     --enable-v4-mapped \
     --enable-mysql \
-    --enable-pgsql \
     --enable-sqlite3 \
     --enable-geoip \
     --enable-jansson \
     --enable-64bit \
     --enable-threads \
     --enable-ulog \
-    --enable-rabbitmq
+    --enable-rabbitmq \
+    --enable-ndpi
 
 
 make %{?_smp_mflags}
@@ -85,8 +92,8 @@ make %{?_smp_mflags}
 make DESTDIR=%{buildroot} install %{?_smp_mflags}
 
 # install sample configuration files
-install -Dp examples/nfacctd-sql_v2.conf.example %{buildroot}/%{_sysconfdir}/%{name}/nfacctd.conf
-install -Dp examples/pmacctd-sql_v2.conf.example %{buildroot}/%{_sysconfdir}/%{name}/pmacctd.conf
+install -Dp examples/nfacctd-sql.conf.example %{buildroot}/%{_sysconfdir}/%{name}/nfacctd.conf
+install -Dp examples/pmacctd-sqlite3.conf.example %{buildroot}/%{_sysconfdir}/%{name}/pmacctd.conf
 
 # install systemd units
 install -d %{buildroot}/%{_unitdir} %{buildroot}/%{_sysconfdir}/sysconfig/%{name}
@@ -110,7 +117,7 @@ install %{SOURCE2} %{SOURCE4} %{SOURCE6} %{SOURCE8} %{SOURCE10} %{SOURCE12} %{bu
 
 %files
 %defattr(-,root,root)
-%doc AUTHORS ChangeLog CONFIG-KEYS COPYING FAQS TOOLS UPGRADE
+%doc AUTHORS ChangeLog CONFIG-KEYS COPYING FAQS UPGRADE QUICKSTART
 %doc docs examples sql
 %{_bindir}/pmacct
 #
@@ -138,8 +145,18 @@ install %{SOURCE2} %{SOURCE4} %{SOURCE6} %{SOURCE8} %{SOURCE10} %{SOURCE12} %{bu
 %dir %{_sysconfdir}/pmacct
 %attr(600,root,root) %config(noreplace) %{_sysconfdir}/pmacct/nfacctd.conf
 %attr(600,root,root) %config(noreplace) %{_sysconfdir}/pmacct/pmacctd.conf
+#
+%dir /usr/share/pmacct
+/usr/share/pmacct/*
+/usr/lib64/pmacct/*
+
 
 %changelog
+* Mon Jan 24 2022 Giacomo Sanchietti <giacomo.sanchietti@nethesis.it> - 1.7.7-1
+- Bump to 1.7.7
+- Add ndpi support
+- Remove postgres support
+
 * Wed Jan 13 2016 Betsy Alpert <ealpert@iix.net> - 1.5.2-3
 - Added build support for AMQP/RabbitMQ
 
