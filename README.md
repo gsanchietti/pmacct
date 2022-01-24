@@ -4,18 +4,26 @@
 
 This is work is based on RPM from [Lux Repository](https://www.iotti.biz/?page_id=126).
 
-# How to build
+## How to build
+
+### nDPI 3.4
 
 The build must be done on a NethServer 7.
 
-First, compile and install nDPI 3.4 because pmacct requires nDPI devel headers.
+First, compile `ndpi-dev` rRPM because pmacct requires nDPI devel headers.
+
 ```
 yum install gcc-c++ automake autoconf  libpcap-devel libtool numactl-devel jason-c-devel -y
 wget https://github.com/ntop/nDPI/archive/refs/tags/3.4.tar.gz
 tar xvzf 3.4.tar.gz
+ln -s nDPI-3.4/ nDPI
 cd nDPI-3.4/
 ./autogen.sh && ./configure && make && make install
+cd packages/rpm
+./configure && make
 ```
+
+### pmacct
 
 Move to root directory, then prepare the evironment to build rpms:
 ```
